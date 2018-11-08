@@ -75,7 +75,7 @@ for folder in os.listdir("samples"):
         X.append(array(pngfile))
     Y = addAnswers(Y)
 plt.imshow(array(X[1]))
-plt.show()
+#plt.show()
 x_size,y_size = X[0].shape
 
 answers = [1,1,2,2,3,2,4,4,1,1,4,2,3,3,3,4,1,2,1,1,4,2,3,2]
@@ -90,42 +90,48 @@ trainMasks = []
 testMasks = []
 
 Xtrain = X[:(int(len(X)/5)+1) * 4]
-#Xtrain = Xtrain.reshape(Xtrain.shape[0],x_size,y_size,1)
+Xtrain = Xtrain.reshape(Xtrain.shape[0],x_size,y_size,1)
 Ytrain = Y[:(int(len(X)/5)+1) * 4]
 Xtest = X[(int(len(X)/5)+1) * 4:]
-#Xtest =  Xtest.reshape(Xtest.shape[0],x_size,y_size,1)
+Xtest =  Xtest.reshape(Xtest.shape[0],x_size,y_size,1)
 Ytest = Y[(int(len(X)/5)+1) * 4:]
 
 
 img_prep = ImagePreprocessing()
 img_prep.add_featurewise_zero_center()
 img_prep.add_featurewise_stdnorm()
-network = input_data(shape=[x_size, y_size],
-                     name='InputData')
+
+img_aumg = ImageAugmentation()
+img_aumg.add_random_rotation(3)
+network = input_data(shape=[x_size, y_size,1],
+                     name='InputData',data_augmentation=img_aumg,data_preprocessing=img_prep)
 print(network)
-# network = conv_2d(network, 8, 16, activation='relu')
+network = conv_2d(network, 32,5, activation='relu')
 # #
-# network = max_pool_2d(network, 2)
+network = max_pool_2d(network, 3)
 #
-# network = conv_2d(network, 8, 3, activation='relu')
+network = conv_2d(network, 32, 3, activation='relu')
 #
 #network = conv_2d(network, 64, 3, activation='relu')
 #
-# network = max_pool_2d(network, 2)
+network = max_pool_2d(network, 2)
 
-network = fully_connected(network, 64, activation='relu')
+network = fully_connected(network, 128, activation='relu')
 
-network = dropout(network, 0.01)
+network = fully_connected(network, 128, activation='relu')
+
+
+network = dropout(network, 0.1)
 
 network = fully_connected(network, 4, activation='softmax')
 
 network = regression(network, optimizer='adam',
                      loss='categorical_crossentropy',
-                     learning_rate=0.01)
+                     learning_rate=0.001)
 
 model = tflearn.DNN(network, tensorboard_verbose=0)
-model.fit(Xtrain, Ytrain, n_epoch=500, shuffle=True, validation_set=(Xtest, Ytest),
-          show_metric=True, batch_size=16, snapshot_epoch=False)
+model.fit(Xtrain, Ytrain, n_epoch=1000, shuffle=True, validation_set=(Xtest, Ytest),
+          show_metric=True, batch_size=64, snapshot_epoch=False)
 
 accuracy = 0
 

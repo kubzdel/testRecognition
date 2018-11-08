@@ -23,7 +23,8 @@ def standarizeName(x,y,dim):
 
     return padding1+str(x)+"_"+padding2+str(y)
 
-FONT_SIZE = 12
+
+
 BORDER_SIZE = 300
 for file in os.listdir("scans"):
     img_rgb = cv2.imread("scans/"+file)
@@ -66,7 +67,8 @@ for file in os.listdir("scans"):
             crop_img = outputImage[pt[1]:pt[1]+350,pt[0]:pt[0]+130]
            # cv2.imshow("cropped", crop_img)
             name = standarizeName(pt[0],pt[1],max(x_dim,y_dim))
-            crop_img = cv2.resize(crop_img,None,fx=0.2,fy=0.2)
+            crop_img = cv2.resize(crop_img,None,fx=0.4,fy=0.4)
+            ret, crop_img = cv2.threshold(crop_img, 170, 255, cv2.THRESH_BINARY)
             cv2.imwrite(newDir+"/sample_"+name+".png",crop_img)
 
 cv2.imwrite('res.png',outputImage)
