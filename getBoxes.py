@@ -24,20 +24,33 @@ def standarizeName(x,y,dim):
     return padding1+str(x)+"_"+padding2+str(y)
 
 
-
+x_template_ratio = 0.0177099
+y_template_ratio = 0.0200186
 BORDER_SIZE = 300
 for file in os.listdir("scans"):
     img_rgb = cv2.imread("scans/"+file)
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
+    img_gray = cv2.copyMakeBorder(
+        img_gray,
+        BORDER_SIZE,
+        BORDER_SIZE,
+        BORDER_SIZE,
+        BORDER_SIZE,
+                     cv2.BORDER_CONSTANT,
+                     value=(255,255,255)
+                  )
     x_dim, y_dim = img_gray.shape
     template = cv2.imread('indicator.png',0)
-    template =  cv2.resize(template, (58, 43))
+    template_x = (int)(x_template_ratio * x_dim)
+    template_y = (int)(y_template_ratio * y_dim)
+
+    template =  cv2.resize(template, (template_x, template_y))
 
     w, h = template.shape[:2]
     w = 130
     h = 350
     res = cv2.matchTemplate(img_gray,template,cv2.TM_CCOEFF_NORMED)
-    threshold = 0.7
+    threshold = 0.45
     loc = np.where( res >= threshold)
     outputImage = cv2.copyMakeBorder(
         img_gray,
@@ -63,8 +76,8 @@ for file in os.listdir("scans"):
             lst[1] +=(55+BORDER_SIZE)
             pt = tuple(lst)
 
-            cv2.rectangle(outputImage, pt, (pt[0] + 130, pt[1] + 350), (0,0,255), 2)
-            crop_img = outputImage[pt[1]:pt[1]+350,pt[0]:pt[0]+130]
+            #cv2.rectangle(outputImage, pt, (pt[0] + 130, pt[1] + 350), (0,0,255), 2)
+            crop_img = outputImage[pt[1]:pt[1]+h,pt[0]:pt[0]+w]
            # cv2.imshow("cropped", crop_img)
             name = standarizeName(pt[0],pt[1],max(x_dim,y_dim))
             crop_img = cv2.resize(crop_img,None,fx=0.4,fy=0.4)

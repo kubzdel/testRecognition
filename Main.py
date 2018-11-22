@@ -104,11 +104,12 @@ img_prep.add_featurewise_stdnorm()
 img_aumg = ImageAugmentation()
 img_aumg.add_random_rotation(3)
 network = input_data(shape=[x_size, y_size,1],
-                     name='InputData',data_augmentation=img_aumg,data_preprocessing=img_prep)
+                     name='InputData')
+#    ,                    data_augmentation=img_aumg,data_preprocessing=img_prep)
 print(network)
 network = conv_2d(network, 32,5, activation='relu')
 # #
-network = max_pool_2d(network, 3)
+network = max_pool_2d(network, 2)
 #
 network = conv_2d(network, 32, 3, activation='relu')
 #
@@ -119,15 +120,15 @@ network = max_pool_2d(network, 2)
 network = fully_connected(network, 128, activation='relu')
 
 network = fully_connected(network, 128, activation='relu')
-
-
+# network = fully_connected(network, 128, activation='relu')
+# network = fully_connected(network, 128, activation='relu')
 network = dropout(network, 0.1)
 
 network = fully_connected(network, 4, activation='softmax')
 
 network = regression(network, optimizer='adam',
                      loss='categorical_crossentropy',
-                     learning_rate=0.001)
+                     learning_rate=0.0001)
 
 model = tflearn.DNN(network, tensorboard_verbose=0)
 model.fit(Xtrain, Ytrain, n_epoch=1000, shuffle=True, validation_set=(Xtest, Ytest),
